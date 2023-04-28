@@ -3,6 +3,7 @@ package main
 import (
     "fmt"
     "os"
+    "io"
     "log"
     "bufio"
 	"github.com/pterm/pterm"
@@ -33,6 +34,52 @@ func writeToFile(content string) {
     if _, err := f.WriteString(content + "\n"); err != nil {
         log.Println(err)
     }
+}
+
+func confirmRemoval(show string) bool {
+    fmt.Print("\033[1A\033[K")
+    area, _ := pterm.DefaultArea.Start() // Start the Area printer.
+    pterm.Warning.Printfln("Are sure you want to delete %s?", show)
+	result, _ := pterm.DefaultInteractiveConfirm.Show()
+    area.Clear()
+    area.Stop()
+    fmt.Print("\033[1A\033[K")
+    return result
+}
+
+func removeShow(show string) {
+    f, _ := os.Open("shows.txt")
+
+    // create and open a temporary file
+    f_tmp, err := os.CreateTemp("", "tmpfile-*.txt")
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    // Copy content from original to tmp
+    _, err = io.Copy(f_tmp, f)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    f, _ = os.Create("shows.txt")
+    tmpfile, _ := os.Open(f_tmp.Name())
+
+    scanner := bufio.NewScanner(tmpfile)
+    for scanner.Scan() {
+        line := scanner.Text()
+        if line != show {
+            if _, err := f.Write([]byte(line + "\n")); err != nil {
+                fmt.Println(err)
+            }
+        }
+    }
+    if err := scanner.Err(); err != nil {
+        log.Fatal(err)
+    }
+
+    defer os.Remove(f_tmp.Name())
+    defer f.Close()
 }
 
 func addShow() {
@@ -80,11 +127,15 @@ func fuzzySearchShows() string {
     pterm.Info.Printfln("Selected option: %s", pterm.Green(selectedOption))
 
     area.Update(selectedOption)
+    area.Clear()
     area.Stop()
+    fmt.Print("\033[1A\033[K")
+    fmt.Print("\033[1A\033[K")
     return selectedOption
 }
 
 func menu() {
+    fmt.Print("\033[1A\033[K")
     area, _ := pterm.DefaultArea.Start() // Start the Area printer.
     menu_options := []string {
         "[1] - Add show",
@@ -108,7 +159,14 @@ func menu() {
 	case "[3] - Edit progress":
         fuzzySearchShows()
 	case "[4] - Delete show":
-        fuzzySearchShows()
+        showToRemove := fuzzySearchShows()
+        if (confirmRemoval(showToRemove)) {
+            removeShow(showToRemove)
+            fmt.Print("\033[1A\033[K")
+        }
+        fmt.Print("\033[1A\033[K")
+        menu()
+
 	case "[5] - Quit":
         os.Exit(0)
 	}
