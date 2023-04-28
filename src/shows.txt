@@ -2,3 +2,5 @@ supernatural s01e02
 chicago med s06e11
 montgommery willows s10e1
 dr stone s02e21
+dr stone;S3E3
+mad max;S1E3
