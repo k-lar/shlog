@@ -7,6 +7,7 @@ import (
     "log"
     "strings"
     "bufio"
+	"atomicgo.dev/keyboard/keys"
 	"github.com/pterm/pterm"
 )
 
@@ -32,6 +33,126 @@ func trimLeftChar(s string) string {
 		}
 	}
 	return s[:0]
+}
+
+func editEntry(showInfo []string) {
+    fmt.Print("\033[1A\033[K")
+    area, _ := pterm.DefaultArea.Start() // Start the Area printer.
+    if (len(showInfo) > 3) {
+        pterm.DefaultTable.WithHasHeader().WithBoxed().WithData(pterm.TableData{
+            {"Name", "Season", "Episode", "Time"},
+            {showInfo[0], trimLeftChar(showInfo[1]), trimLeftChar(showInfo[2]), trimLeftChar(showInfo[3])},
+        }).Render()
+    } else {
+        pterm.DefaultTable.WithHasHeader().WithBoxed().WithData(pterm.TableData{
+            {"Name", "Season", "Episode"},
+            {showInfo[0], trimLeftChar(showInfo[1]), trimLeftChar(showInfo[2])},
+        }).Render()
+    }
+
+    options := []string {
+        "Show name",
+        "Season",
+        "Episode",
+        "Time",
+    }
+
+	printer := pterm.DefaultInteractiveMultiselect.WithOptions(options)
+	printer.Filter = false
+	printer.KeyConfirm = keys.Enter
+	printer.KeySelect = keys.Space
+	printer.Checkmark = &pterm.Checkmark{Checked: pterm.Green("+"), Unchecked: pterm.Red("-")}
+	selectedOptions, _ := printer.Show()
+
+    entryName := showInfo[0]
+    updatedInfo := showInfo
+    updatedArr := [4]int{0, 0, 0, 0}
+    // fmt.Println(showInfo)
+    for i := 0; i < len(selectedOptions); i++ {
+
+
+        if (selectedOptions[i] == "Show name") {
+            result, _ := pterm.DefaultInteractiveTextInput.WithMultiLine(false).Show("Update show name")
+            updatedInfo[0] = result
+            updatedArr[0] = 1
+        } else {
+            updatedInfo[0] = showInfo[0]
+        }
+
+        if (selectedOptions[i] == "Season") {
+            result, _ := pterm.DefaultInteractiveTextInput.WithMultiLine(false).Show("Update season")
+            updatedInfo[1] = result
+            updatedArr[1] = 1
+        } else {
+            updatedInfo[1] = showInfo[1]
+            // updatedInfo[1] = trimLeftChar(updatedInfo[1])
+        }
+
+        if (selectedOptions[i] == "Episode") {
+            result, _ := pterm.DefaultInteractiveTextInput.WithMultiLine(false).Show("Update episode")
+            updatedInfo[2] = result
+            updatedArr[2] = 1
+        } else {
+            updatedInfo[2] = showInfo[2]
+            // updatedInfo[2] = trimLeftChar(updatedInfo[2])
+        }
+
+        if (selectedOptions[i] == "Time") {
+            result, _ := pterm.DefaultInteractiveTextInput.WithMultiLine(false).Show("Update time")
+            updatedInfo[3] = result
+            updatedArr[3] = 1
+        } else {
+            if (len(showInfo) > 3) {
+                updatedInfo[3] = showInfo[3]
+                // updatedInfo[3] = trimLeftChar(updatedInfo[3])
+            }
+        }
+    }
+
+    // fmt.Println(updatedInfo)
+
+    var updatedEntry string
+    if (len(updatedInfo) > 3) {
+
+        updatedEntry = updatedInfo[0]
+        if (updatedArr[1] == 1) {
+            updatedEntry = updatedEntry + ";S" + updatedInfo[1]
+        } else {
+            updatedEntry = updatedEntry + updatedInfo[1]
+        }
+
+        if (updatedArr[2] == 1) {
+            updatedEntry = updatedEntry + ";E" + updatedInfo[2]
+        } else {
+            updatedEntry = updatedEntry + ";" + updatedInfo[2]
+        }
+
+        if (updatedArr[3] == 1) {
+            updatedEntry = updatedEntry + ";T" + updatedInfo[1]
+        } else {
+            updatedEntry = updatedEntry + ";" + updatedInfo[1]
+        }
+    } else {
+        updatedEntry = updatedInfo[0]
+        if (updatedArr[1] == 1) {
+            updatedEntry = updatedEntry + ";S" + updatedInfo[1]
+        } else {
+            updatedEntry = updatedEntry + ";" + updatedInfo[1]
+        }
+
+        if (updatedArr[2] == 1) {
+            updatedEntry = updatedEntry + ";E" + updatedInfo[2]
+        } else {
+            updatedEntry = updatedEntry + ";" + updatedInfo[2]
+        }
+    }
+
+    // fmt.Println(updatedEntry)
+    // fmt.Println("Removing: ", entryName)
+    removeShow(entryName)
+    writeToFile(updatedEntry)
+    // area.Clear()
+    area.Stop()
 }
 
 func writeToFile(content string) {
@@ -234,7 +355,7 @@ func menu() {
         // printEntry(fuzzySearchShows())
         printEntry(getShowInfo("shows.txt", fuzzySearchShows()))
 	case "[3] - Edit progress":
-        fuzzySearchShows()
+        editEntry(getShowInfo("shows.txt", fuzzySearchShows()))
 	case "[4] - Delete show":
         showToRemove := fuzzySearchShows()
         if (confirmRemoval(showToRemove)) {

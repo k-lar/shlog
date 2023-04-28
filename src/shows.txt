@@ -1,5 +1,8 @@
 dr stone;S3;E3
-mad max;S1;E3
-Bruh moment;S1;E13;T00:00
-bla;S2;E44
 adidas;S2;E1
+sdfghj;S5;E2
+testing;S2;E2;T11:11
+testinggasfasf;S2;E2;T11:11
+brueh;S2;E2;T11:11
+MODEEEELL;S20;E15;T11:55
+bla;S2;E2
