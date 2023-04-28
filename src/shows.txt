@@ -1,6 +1,5 @@
-supernatural s01e02
-chicago med s06e11
-montgommery willows s10e1
-dr stone s02e21
-dr stone;S3E3
-mad max;S1E3
+dr stone;S3;E3
+mad max;S1;E3
+Bruh moment;S1;E13;T00:00
+bla;S2;E44
+adidas;S2;E1

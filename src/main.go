@@ -5,6 +5,7 @@ import (
     "os"
     "io"
     "log"
+    "strings"
     "bufio"
 	"github.com/pterm/pterm"
 )
@@ -22,6 +23,15 @@ func readFile(path string) ([]string, error) {
         lines = append(lines, scanner.Text())
     }
     return lines, scanner.Err()
+}
+
+func trimLeftChar(s string) string {
+	for i := range s {
+		if i > 0 {
+			return s[i:]
+		}
+	}
+	return s[:0]
 }
 
 func writeToFile(content string) {
@@ -68,7 +78,8 @@ func removeShow(show string) {
     scanner := bufio.NewScanner(tmpfile)
     for scanner.Scan() {
         line := scanner.Text()
-        if line != show {
+        split := strings.Split(line, ";")
+        if split[0] != show {
             if _, err := f.Write([]byte(line + "\n")); err != nil {
                 fmt.Println(err)
             }
@@ -80,6 +91,39 @@ func removeShow(show string) {
 
     defer os.Remove(f_tmp.Name())
     defer f.Close()
+}
+
+func printEntry(showInfo []string) {
+    if (len(showInfo) > 3) {
+        pterm.DefaultTable.WithHasHeader().WithBoxed().WithData(pterm.TableData{
+            {"Name", "Season", "Episode", "Time"},
+            {showInfo[0], trimLeftChar(showInfo[1]), trimLeftChar(showInfo[2]), trimLeftChar(showInfo[3])},
+        }).Render()
+    } else {
+        pterm.DefaultTable.WithHasHeader().WithBoxed().WithData(pterm.TableData{
+            {"Name", "Season", "Episode"},
+            {showInfo[0], trimLeftChar(showInfo[1]), trimLeftChar(showInfo[2])},
+        }).Render()
+    }
+}
+
+func getShowInfo(path string, show string) []string {
+    file, err := os.Open(path)
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer file.Close()
+
+    var split []string
+    scanner := bufio.NewScanner(file)
+    for scanner.Scan() {
+        line := scanner.Text()
+        split = strings.Split(line, ";")
+        if (split[0] == show) {
+            return split
+        }
+    }
+    return split
 }
 
 func addShow() {
@@ -99,18 +143,49 @@ func addShow() {
     fmt.Print("\033[1A\033[K")
     fmt.Print("\033[1A\033[K")
 
-    entry := showName + ";S" + showSeason + "E" + showEpisode
+    entry := showName + ";S" + showSeason + ";E" + showEpisode
     if showTime != "" {
-        entry = entry + "T" + showTime
+        entry = entry + ";T" + showTime
     }
 
     writeToFile(entry)
 
-    pterm.Println(pterm.LightGreen("Entry added:"))
-    pterm.DefaultTable.WithHasHeader().WithBoxed().WithData(pterm.TableData{
-		{"Name", "Season", "Episode", "Time"},
-		{showName, showSeason, showEpisode, showTime},
-	}).Render()
+    if (showTime != "") {
+        pterm.Println(pterm.LightGreen("Entry added:"))
+        pterm.DefaultTable.WithHasHeader().WithBoxed().WithData(pterm.TableData{
+            {"Name", "Season", "Episode", "Time"},
+            {showName, showSeason, showEpisode, showTime},
+        }).Render()
+    } else {
+        pterm.Println(pterm.LightGreen("Entry added:"))
+        pterm.DefaultTable.WithHasHeader().WithBoxed().WithData(pterm.TableData{
+            {"Name", "Season", "Episode"},
+            {showName, showSeason, showEpisode},
+        }).Render()
+    }
+}
+
+func prettyReadFile(path string) ([]string, []string, error) {
+    file, err := os.Open(path)
+    if err != nil {
+        return nil, nil, err
+    }
+    defer file.Close()
+
+    var lines []string
+    var split []string
+    scanner := bufio.NewScanner(file)
+    for scanner.Scan() {
+        line := scanner.Text()
+        split = strings.Split(line, ";")
+        // if (len(split) > 3) {
+        //     line = split[0] + " " + split[1] + " " + split[2] + " " + split[3]
+        // } else {
+        //     line = split[0] + " " + split[1] + " " + split[2]
+        // }
+        lines = append(lines, split[0])
+    }
+    return lines, split, scanner.Err()
 }
 
 func fuzzySearchShows() string {
@@ -118,12 +193,13 @@ func fuzzySearchShows() string {
     fmt.Print("\033[1A\033[K")
     area, _ := pterm.DefaultArea.Start() // Start the Area printer.
 
-    shows, err := readFile("shows.txt")
+    // shows, err := readFile("shows.txt")
+    shows, _, err := prettyReadFile("shows.txt")
     if err != nil {
         log.Fatalf("readFile: %s", err)
     }
 
-    selectedOption, _ := pterm.DefaultInteractiveSelect.WithOptions(shows).Show()
+    selectedOption, _ := pterm.DefaultInteractiveSelect.WithOptions(shows).Show("Select a show:")
     pterm.Info.Printfln("Selected option: %s", pterm.Green(selectedOption))
 
     area.Update(selectedOption)
@@ -155,7 +231,8 @@ func menu() {
         fmt.Print("\033[1A\033[K")
         addShow()
 	case "[2] - View progress":
-        fuzzySearchShows()
+        // printEntry(fuzzySearchShows())
+        printEntry(getShowInfo("shows.txt", fuzzySearchShows()))
 	case "[3] - Edit progress":
         fuzzySearchShows()
 	case "[4] - Delete show":
