@@ -82,6 +82,17 @@ func editEntry(showInfo []string) {
 	printer.Checkmark = &pterm.Checkmark{Checked: pterm.Green("+"), Unchecked: pterm.Red("-")}
 	selectedOptions, _ := printer.Show()
 
+    if (selectedOptions == nil) {
+        fmt.Println("No edit option selected.")
+        result, _ := pterm.DefaultInteractiveConfirm.WithDefaultValue(true).Show("Exit to menu?")
+        if (result == true) {
+            menu()
+        } else {
+            editEntry(showInfo)
+            return
+        }
+    }
+
     entryName := showInfo[0]
     updatedInfo := showInfo
     updatedArr := [4]int{0, 0, 0, 0}
@@ -313,8 +324,6 @@ func prettyReadFile(path string) ([]string, []string, error) {
 func fuzzySearchShows() string {
     fmt.Print("\033[1A\033[K")
     fmt.Print("\033[1A\033[K")
-
-
 
     area, _ := pterm.DefaultArea.Start() // Start the Area printer.
 
