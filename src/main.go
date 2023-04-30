@@ -7,9 +7,12 @@ import (
     "log"
     "strings"
     "bufio"
+    "runtime"
 	"atomicgo.dev/keyboard/keys"
 	"github.com/pterm/pterm"
 )
+
+var showsPath string;
 
 func readFile(path string) ([]string, error) {
     file, err := os.Open(path)
@@ -33,6 +36,26 @@ func trimLeftChar(s string) string {
 		}
 	}
 	return s[:0]
+}
+
+func getShowsPath() string {
+    userdir, err := os.UserHomeDir()
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    if runtime.GOOS == "windows" {
+        showsPath = userdir + "/shlog/shows.txt"
+    } else {
+        showsPath = userdir + ".config/shlog/shows.txt"
+    }
+
+	err := os.MkdirAll(showsPath, os.ModePerm)
+	if err != nil {
+		log.Println(err)
+	}
+
+    return showsPath
 }
 
 func editEntry(showInfo []string) {
@@ -140,6 +163,8 @@ func writeToFile(content string) {
         log.Println(err)
     }
 }
+
+
 
 func confirmRemoval(show string) bool {
     fmt.Print("\033[1A\033[K")
