@@ -1,8 +1,13 @@
-dr stone;S3;E3
-adidas;S2;E1
-sdfghj;S5;E2
-testing;S2;E2;T11:11
+supernatural;S5;E4;T00:00
+adidas;S2;E1;T10:10
+brueh;S3;E1;T11:11
+bla;S1;E5;T00:01
+new show;S5;E2;T11:11
+model.;S1;E2;T11:11
+shlong;S2;E745;T00:00
+badsfbadsf;S1;E2;T00:00
+lalala;S2;E3;T11:11
+tvoja mama;S4;E9;T69:69
+ur mom!!!!;S55;E22;T55:21
+dr stone;S3;E1;T00:00
 testinggasfasf;S2;E2;T11:11
-brueh;S2;E2;T11:11
-MODEEEELL;S20;E15;T11:55
-bla;S2;E2

@@ -38,17 +38,11 @@ func trimLeftChar(s string) string {
 func editEntry(showInfo []string) {
     fmt.Print("\033[1A\033[K")
     area, _ := pterm.DefaultArea.Start() // Start the Area printer.
-    if (len(showInfo) > 3) {
-        pterm.DefaultTable.WithHasHeader().WithBoxed().WithData(pterm.TableData{
-            {"Name", "Season", "Episode", "Time"},
-            {showInfo[0], trimLeftChar(showInfo[1]), trimLeftChar(showInfo[2]), trimLeftChar(showInfo[3])},
-        }).Render()
-    } else {
-        pterm.DefaultTable.WithHasHeader().WithBoxed().WithData(pterm.TableData{
-            {"Name", "Season", "Episode"},
-            {showInfo[0], trimLeftChar(showInfo[1]), trimLeftChar(showInfo[2])},
-        }).Render()
-    }
+
+    pterm.DefaultTable.WithHasHeader().WithBoxed().WithData(pterm.TableData{
+        {"Name", "Season", "Episode", "Time"},
+        {showInfo[0], trimLeftChar(showInfo[1]), trimLeftChar(showInfo[2]), trimLeftChar(showInfo[3])},
+    }).Render()
 
     options := []string {
         "Show name",
@@ -67,84 +61,59 @@ func editEntry(showInfo []string) {
     entryName := showInfo[0]
     updatedInfo := showInfo
     updatedArr := [4]int{0, 0, 0, 0}
+
     // fmt.Println(showInfo)
     for i := 0; i < len(selectedOptions); i++ {
 
+        switch selectedOptions[i] {
+            case "Show name":
+                result, _ := pterm.DefaultInteractiveTextInput.WithMultiLine(false).Show("Update show name")
+                updatedInfo[0] = result
+                updatedArr[0] = 1
 
-        if (selectedOptions[i] == "Show name") {
-            result, _ := pterm.DefaultInteractiveTextInput.WithMultiLine(false).Show("Update show name")
-            updatedInfo[0] = result
-            updatedArr[0] = 1
-        } else {
-            updatedInfo[0] = showInfo[0]
-        }
+            case "Season":
+                result, _ := pterm.DefaultInteractiveTextInput.WithMultiLine(false).Show("Update season")
+                updatedInfo[1] = result
+                updatedArr[1] = 1
 
-        if (selectedOptions[i] == "Season") {
-            result, _ := pterm.DefaultInteractiveTextInput.WithMultiLine(false).Show("Update season")
-            updatedInfo[1] = result
-            updatedArr[1] = 1
-        } else {
-            updatedInfo[1] = showInfo[1]
-            // updatedInfo[1] = trimLeftChar(updatedInfo[1])
-        }
+            case "Episode":
+                result, _ := pterm.DefaultInteractiveTextInput.WithMultiLine(false).Show("Update episode")
+                updatedInfo[2] = result
+                updatedArr[2] = 1
 
-        if (selectedOptions[i] == "Episode") {
-            result, _ := pterm.DefaultInteractiveTextInput.WithMultiLine(false).Show("Update episode")
-            updatedInfo[2] = result
-            updatedArr[2] = 1
-        } else {
-            updatedInfo[2] = showInfo[2]
-            // updatedInfo[2] = trimLeftChar(updatedInfo[2])
-        }
-
-        if (selectedOptions[i] == "Time") {
-            result, _ := pterm.DefaultInteractiveTextInput.WithMultiLine(false).Show("Update time")
-            updatedInfo[3] = result
-            updatedArr[3] = 1
-        } else {
-            if (len(showInfo) > 3) {
-                updatedInfo[3] = showInfo[3]
-                // updatedInfo[3] = trimLeftChar(updatedInfo[3])
-            }
+            case "Time":
+                result, _ := pterm.DefaultInteractiveTextInput.WithMultiLine(false).Show("Update time")
+                updatedInfo[3] = result
+                updatedArr[3] = 1
         }
     }
 
     // fmt.Println(updatedInfo)
+    // fmt.Println(len(updatedInfo))
 
     var updatedEntry string
-    if (len(updatedInfo) > 3) {
-
+    if (updatedArr[0] == 1) {
         updatedEntry = updatedInfo[0]
-        if (updatedArr[1] == 1) {
-            updatedEntry = updatedEntry + ";S" + updatedInfo[1]
-        } else {
-            updatedEntry = updatedEntry + updatedInfo[1]
-        }
-
-        if (updatedArr[2] == 1) {
-            updatedEntry = updatedEntry + ";E" + updatedInfo[2]
-        } else {
-            updatedEntry = updatedEntry + ";" + updatedInfo[2]
-        }
-
-        if (updatedArr[3] == 1) {
-            updatedEntry = updatedEntry + ";T" + updatedInfo[1]
-        } else {
-            updatedEntry = updatedEntry + ";" + updatedInfo[1]
-        }
     } else {
-        updatedEntry = updatedInfo[0]
-        if (updatedArr[1] == 1) {
-            updatedEntry = updatedEntry + ";S" + updatedInfo[1]
-        } else {
-            updatedEntry = updatedEntry + ";" + updatedInfo[1]
-        }
+        updatedEntry = showInfo[0]
+    }
 
-        if (updatedArr[2] == 1) {
-            updatedEntry = updatedEntry + ";E" + updatedInfo[2]
-        } else {
-            updatedEntry = updatedEntry + ";" + updatedInfo[2]
-        }
+    if (updatedArr[1] == 1) {
+        updatedEntry = updatedEntry + ";S" + updatedInfo[1]
+    } else {
+        updatedEntry = updatedEntry + ";" + showInfo[1]
+    }
+
+    if (updatedArr[2] == 1) {
+        updatedEntry = updatedEntry + ";E" + updatedInfo[2]
+    } else {
+        updatedEntry = updatedEntry + ";" + showInfo[2]
+    }
+
+    if (updatedArr[3] == 1) {
+        updatedEntry = updatedEntry + ";T" + updatedInfo[3]
+    } else {
+        updatedEntry = updatedEntry + ";" + showInfo[3]
     }
 
     // fmt.Println(updatedEntry)
@@ -152,6 +121,11 @@ func editEntry(showInfo []string) {
     removeShow(entryName)
     writeToFile(updatedEntry)
     // area.Clear()
+
+    tmpEntry := strings.Split(updatedEntry, ";")
+    fmt.Println()
+    pterm.Println(pterm.LightGreen("Updated entry:"))
+    printEntry(getShowInfo("shows.txt", tmpEntry[0]))
     area.Stop()
 }
 
@@ -226,6 +200,7 @@ func printEntry(showInfo []string) {
             {showInfo[0], trimLeftChar(showInfo[1]), trimLeftChar(showInfo[2])},
         }).Render()
     }
+    fmt.Println()
 }
 
 func getShowInfo(path string, show string) []string {
@@ -261,6 +236,10 @@ func addShow() {
     fmt.Print("\033[1A\033[K")
 
     showTime, _ := pterm.DefaultInteractiveTextInput.WithMultiLine(false).Show("Enter time (optional)")
+    showTime = strings.TrimSpace(showTime)
+    if (showTime == "") {
+        showTime = "00:00"
+    }
     fmt.Print("\033[1A\033[K")
     fmt.Print("\033[1A\033[K")
 
@@ -284,6 +263,7 @@ func addShow() {
             {showName, showSeason, showEpisode},
         }).Render()
     }
+    fmt.Println()
 }
 
 func prettyReadFile(path string) ([]string, []string, error) {
