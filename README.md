@@ -49,7 +49,7 @@ shlog
 - **Edit entry menu**  
 ![Edit entry menu](https://gitlab.com/k_lar/shlog/uploads/9d56f4978a61c8d1da050bc3aa9e98ca/edit_entry.png)
 
-- **Update show process**
+- **Update show process**  
 ![Updating show entry](https://gitlab.com/k_lar/shlog/uploads/33afb029b6d8737bd897256a1afaec5f/edited_entry.png)
 
 ## FAQ
