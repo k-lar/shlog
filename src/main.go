@@ -338,6 +338,7 @@ func menu() {
         editEntry(getShowInfo("shows.txt", fuzzySearchShows()))
 	case "[4] - Delete show":
         showToRemove := fuzzySearchShows()
+        fmt.Println()
         if (confirmRemoval(showToRemove)) {
             removeShow(showToRemove)
             fmt.Print("\033[1A\033[K")
