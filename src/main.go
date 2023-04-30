@@ -12,8 +12,6 @@ import (
 	"github.com/pterm/pterm"
 )
 
-var showsPath string;
-
 func readFile(path string) ([]string, error) {
     file, err := os.Open(path)
     if err != nil {
@@ -39,22 +37,24 @@ func trimLeftChar(s string) string {
 }
 
 func getShowsPath() string {
+    var showsPath string;
     userdir, err := os.UserHomeDir()
     if err != nil {
         log.Fatal(err)
     }
 
     if runtime.GOOS == "windows" {
-        showsPath = userdir + "/shlog/shows.txt"
+        showsPath = userdir + "/shlog"
     } else {
-        showsPath = userdir + ".config/shlog/shows.txt"
+        showsPath = userdir + "/.config/shlog"
     }
 
-	err := os.MkdirAll(showsPath, os.ModePerm)
-	if err != nil {
-		log.Println(err)
+	error := os.MkdirAll(showsPath, os.ModePerm)
+	if error != nil {
+		log.Println(error)
 	}
 
+    showsPath = showsPath + "/shows.txt"
     return showsPath
 }
 
@@ -148,12 +148,12 @@ func editEntry(showInfo []string) {
     tmpEntry := strings.Split(updatedEntry, ";")
     fmt.Println()
     pterm.Println(pterm.LightGreen("Updated entry:"))
-    printEntry(getShowInfo("shows.txt", tmpEntry[0]))
+    printEntry(getShowInfo(getShowsPath(), tmpEntry[0]))
     area.Stop()
 }
 
 func writeToFile(content string) {
-    f, err := os.OpenFile("shows.txt",
+    f, err := os.OpenFile(getShowsPath(),
     os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
     if err != nil {
         log.Println(err)
@@ -178,7 +178,7 @@ func confirmRemoval(show string) bool {
 }
 
 func removeShow(show string) {
-    f, _ := os.Open("shows.txt")
+    f, _ := os.Open(getShowsPath())
 
     // create and open a temporary file
     f_tmp, err := os.CreateTemp("", "tmpfile-*.txt")
@@ -192,7 +192,7 @@ func removeShow(show string) {
         log.Fatal(err)
     }
 
-    f, _ = os.Create("shows.txt")
+    f, _ = os.Create(getShowsPath())
     tmpfile, _ := os.Open(f_tmp.Name())
 
     scanner := bufio.NewScanner(tmpfile)
@@ -304,11 +304,6 @@ func prettyReadFile(path string) ([]string, []string, error) {
     for scanner.Scan() {
         line := scanner.Text()
         split = strings.Split(line, ";")
-        // if (len(split) > 3) {
-        //     line = split[0] + " " + split[1] + " " + split[2] + " " + split[3]
-        // } else {
-        //     line = split[0] + " " + split[1] + " " + split[2]
-        // }
         lines = append(lines, split[0])
     }
     return lines, split, scanner.Err()
@@ -319,8 +314,7 @@ func fuzzySearchShows() string {
     fmt.Print("\033[1A\033[K")
     area, _ := pterm.DefaultArea.Start() // Start the Area printer.
 
-    // shows, err := readFile("shows.txt")
-    shows, _, err := prettyReadFile("shows.txt")
+    shows, _, err := prettyReadFile(getShowsPath())
     if err != nil {
         log.Fatalf("readFile: %s", err)
     }
@@ -357,10 +351,9 @@ func menu() {
         fmt.Print("\033[1A\033[K")
         addShow()
 	case "[2] - View progress":
-        // printEntry(fuzzySearchShows())
-        printEntry(getShowInfo("shows.txt", fuzzySearchShows()))
+        printEntry(getShowInfo(getShowsPath(), fuzzySearchShows()))
 	case "[3] - Edit progress":
-        editEntry(getShowInfo("shows.txt", fuzzySearchShows()))
+        editEntry(getShowInfo(getShowsPath(), fuzzySearchShows()))
 	case "[4] - Delete show":
         showToRemove := fuzzySearchShows()
         fmt.Println()
