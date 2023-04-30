@@ -32,6 +32,26 @@ shlog
     * Episode
     * Time watched
 
+## Showcase
+
+- **Main menu**
+![Main menu](https://gitlab.com/k_lar/shlog/uploads/70a2810d7e4764c9d789773d16a12a53/main_menu.png)
+
+- **Add show**
+![Add entry](https://gitlab.com/k_lar/shlog/uploads/32139246f239c4f77f8dc25cf4ab7778/added_entry.png)
+
+- **Show selection (fuzzy search)**
+![Show search](https://gitlab.com/k_lar/shlog/uploads/b29b2f94d9e21a2b503e22d5cb6218fc/selecting_show.png)
+
+- **Print show entry**
+![Print show entry](https://gitlab.com/k_lar/shlog/uploads/8cb59e4dee89a0177987a60916252c9f/view_progress.png)
+
+- **Edit entry menu**
+![Edit entry menu](https://gitlab.com/k_lar/shlog/uploads/9d56f4978a61c8d1da050bc3aa9e98ca/edit_entry.png)
+
+- **Update show process**
+![Updating show entry](https://gitlab.com/k_lar/shlog/uploads/33afb029b6d8737bd897256a1afaec5f/edited_entry.png)
+
 ## FAQ
 
 Does this program track stuff automatically?  
