@@ -8,6 +8,7 @@ import (
     "strings"
     "bufio"
     "runtime"
+    "errors"
 	"atomicgo.dev/keyboard/keys"
 	"github.com/pterm/pterm"
 )
@@ -312,6 +313,9 @@ func prettyReadFile(path string) ([]string, []string, error) {
 func fuzzySearchShows() string {
     fmt.Print("\033[1A\033[K")
     fmt.Print("\033[1A\033[K")
+
+
+
     area, _ := pterm.DefaultArea.Start() // Start the Area printer.
 
     shows, _, err := prettyReadFile(getShowsPath())
@@ -350,19 +354,58 @@ func menu() {
 	case "[1] - Add show":
         fmt.Print("\033[1A\033[K")
         addShow()
+
 	case "[2] - View progress":
-        printEntry(getShowInfo(getShowsPath(), fuzzySearchShows()))
-	case "[3] - Edit progress":
-        editEntry(getShowInfo(getShowsPath(), fuzzySearchShows()))
-	case "[4] - Delete show":
-        showToRemove := fuzzySearchShows()
-        fmt.Println()
-        if (confirmRemoval(showToRemove)) {
-            removeShow(showToRemove)
-            fmt.Print("\033[1A\033[K")
+        if _, err := os.Stat(getShowsPath()); err == nil {
+            // path/to/whatever exists
+            printEntry(getShowInfo(getShowsPath(), fuzzySearchShows()))
+        } else if errors.Is(err, os.ErrNotExist) {
+            // path/to/whatever does *not* exist
+            fmt.Println("No shows can be found.")
+            os.Exit(0)
+        } else {
+            // Schrodinger: file may or may not exist. See err for details.
+            // Therefore, do *NOT* use !os.IsNotExist(err) to test for file existence
+            fmt.Println("ERROR: Something is wrong with shows.txt file.")
+            os.Exit(1)
         }
-        fmt.Print("\033[1A\033[K")
-        menu()
+
+	case "[3] - Edit progress":
+        if _, err := os.Stat(getShowsPath()); err == nil {
+            // path/to/whatever exists
+            editEntry(getShowInfo(getShowsPath(), fuzzySearchShows()))
+        } else if errors.Is(err, os.ErrNotExist) {
+            // path/to/whatever does *not* exist
+            fmt.Println("No shows to edit.")
+            os.Exit(0)
+        } else {
+            // Schrodinger: file may or may not exist. See err for details.
+            // Therefore, do *NOT* use !os.IsNotExist(err) to test for file existence
+            fmt.Println("ERROR: Something is wrong with shows.txt file.")
+            os.Exit(1)
+        }
+
+	case "[4] - Delete show":
+        if _, err := os.Stat(getShowsPath()); err == nil {
+            // path/to/whatever exists
+            showToRemove := fuzzySearchShows()
+            fmt.Println()
+            if (confirmRemoval(showToRemove)) {
+                removeShow(showToRemove)
+                fmt.Print("\033[1A\033[K")
+            }
+            fmt.Print("\033[1A\033[K")
+            menu()
+        } else if errors.Is(err, os.ErrNotExist) {
+            // path/to/whatever does *not* exist
+            fmt.Println("No shows to delete.")
+            os.Exit(0)
+        } else {
+            // Schrodinger: file may or may not exist. See err for details.
+            // Therefore, do *NOT* use !os.IsNotExist(err) to test for file existence
+            fmt.Println("ERROR: Something is wrong with shows.txt file.")
+            os.Exit(1)
+        }
 
 	case "[5] - Quit":
         os.Exit(0)
