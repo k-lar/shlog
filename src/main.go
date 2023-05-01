@@ -176,8 +176,6 @@ func writeToFile(content string) {
     }
 }
 
-
-
 func confirmRemoval(show string) bool {
     fmt.Print("\033[1A\033[K")
     area, _ := pterm.DefaultArea.Start() // Start the Area printer.
@@ -259,16 +257,66 @@ func getShowInfo(path string, show string) []string {
     return split
 }
 
+func checkAddedShowName() string {
+    text := "Enter show name"
+    for {
+        showName, _ := pterm.DefaultInteractiveTextInput.WithMultiLine(false).Show(text)
+        if (showName == "") {
+            text = "Enter show name (Not optional)"
+            fmt.Print("\033[1A\033[K")
+            fmt.Print("\033[1A\033[K")
+        } else if (strings.Contains(showName, ";")) {
+            text = "Enter show name (\";\" not allowed)"
+            fmt.Print("\033[1A\033[K")
+            fmt.Print("\033[1A\033[K")
+        } else {
+            return showName
+        }
+    }
+}
+
+func checkAddedShowSeason() string {
+    text := "Enter show season (Default 1)"
+    for {
+        showSeason, _ := pterm.DefaultInteractiveTextInput.WithMultiLine(false).Show(text)
+        if (showSeason == "") {
+            return "1"
+        } else if (strings.Contains(showSeason, ";")) {
+            text = "Enter show season (\";\" not allowed)"
+            fmt.Print("\033[1A\033[K")
+            fmt.Print("\033[1A\033[K")
+        } else {
+            return showSeason
+        }
+    }
+}
+
+func checkAddedShowEpisode() string {
+    text := "Enter show episode (Default 1)"
+    for {
+        showEpisode, _ := pterm.DefaultInteractiveTextInput.WithMultiLine(false).Show(text)
+        if (showEpisode == "") {
+            return "1"
+        } else if (strings.Contains(showEpisode, ";")) {
+            text = "Enter show episode (\";\" not allowed)"
+            fmt.Print("\033[1A\033[K")
+            fmt.Print("\033[1A\033[K")
+        } else {
+            return showEpisode
+        }
+    }
+}
+
 func addShow() {
-    showName, _ := pterm.DefaultInteractiveTextInput.WithMultiLine(false).Show("Enter show name")
+    showName := checkAddedShowName()
     fmt.Print("\033[1A\033[K")
     fmt.Print("\033[1A\033[K")
 
-    showSeason, _ := pterm.DefaultInteractiveTextInput.WithMultiLine(false).Show("Enter season")
+    showSeason := checkAddedShowSeason()
     fmt.Print("\033[1A\033[K")
     fmt.Print("\033[1A\033[K")
 
-    showEpisode, _ := pterm.DefaultInteractiveTextInput.WithMultiLine(false).Show("Enter episode")
+    showEpisode := checkAddedShowEpisode()
     fmt.Print("\033[1A\033[K")
     fmt.Print("\033[1A\033[K")
 
