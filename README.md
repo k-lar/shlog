@@ -15,7 +15,9 @@ make
 To install it systemwide:
 ```
 sudo make install
-```
+```  
+
+Windows 64bit binary download: [shlog.exe](https://gitlab.com/k_lar/shlog/uploads/ac27adad118c2042e0e3b99dc8af6158/shlog.exe)
 
 ## Usage
 
