@@ -475,6 +475,8 @@ func menu() {
                      pterm.DefaultBasicText.Println(pterm.Red("Deleted: ") + showsToRemove[i])
                      removeShow(showsToRemove[i])
                  }
+             } else {
+                fmt.Println("No show selected. Quitting...")
              }
         } else if errors.Is(err, os.ErrNotExist) {
             // path/to/whatever does *not* exist
