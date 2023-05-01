@@ -78,7 +78,7 @@ func editEntry(showInfo []string) {
 	printer := pterm.DefaultInteractiveMultiselect.WithOptions(options)
 	printer.Filter = false
 	printer.KeyConfirm = keys.Enter
-	printer.KeySelect = keys.Space
+	printer.KeySelect = keys.Tab
 	printer.Checkmark = &pterm.Checkmark{Checked: pterm.Green("+"), Unchecked: pterm.Red("-")}
 	selectedOptions, _ := printer.Show()
 
@@ -369,6 +369,29 @@ func prettyReadFile(path string) ([]string, []string, error) {
     return lines, split, scanner.Err()
 }
 
+func removeMultiSelect() []string {
+    fmt.Print("\033[1A\033[K")
+    area, _ := pterm.DefaultArea.Start() // Start the Area printer.
+    fmt.Print("\033[1A\033[K")
+
+    shows, _, err := prettyReadFile(getShowsPath())
+    if err != nil {
+        log.Fatalf("readFile: %s", err)
+    }
+
+	printer := pterm.DefaultInteractiveMultiselect.WithOptions(shows)
+    printer.Filter = true
+	printer.KeyConfirm = keys.Enter
+	printer.KeySelect = keys.Tab
+	printer.Checkmark = &pterm.Checkmark{Checked: pterm.Green("+"), Unchecked: pterm.Red("-")}
+	selectedOptions, _ := printer.Show()
+
+
+    area.Clear()
+    area.Stop()
+    return selectedOptions
+}
+
 func fuzzySearchShows() string {
     fmt.Print("\033[1A\033[K")
     fmt.Print("\033[1A\033[K")
@@ -445,14 +468,14 @@ func menu() {
 	case "[4] - Delete show":
         if _, err := os.Stat(getShowsPath()); err == nil {
             // path/to/whatever exists
-            showToRemove := fuzzySearchShows()
-            fmt.Println()
-            if (confirmRemoval(showToRemove)) {
-                removeShow(showToRemove)
-                fmt.Print("\033[1A\033[K")
-            }
-            fmt.Print("\033[1A\033[K")
-            menu()
+            showsToRemove := removeMultiSelect()
+             if (showsToRemove != nil) {
+                 for i := 0; i < len(showsToRemove); i++ {
+                     fmt.Print("\033[1A\033[K")
+                     pterm.DefaultBasicText.Println(pterm.Red("Deleted: ") + showsToRemove[i])
+                     removeShow(showsToRemove[i])
+                 }
+             }
         } else if errors.Is(err, os.ErrNotExist) {
             // path/to/whatever does *not* exist
             fmt.Println("No shows to delete.")
